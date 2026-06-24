@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "../db.js";
 import { serializeListing, serializeListings } from "../serializers.js";
 import { matchNewListing } from "../agent/match.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 
 export const listingsRouter = Router();
 
@@ -16,7 +17,7 @@ const listQuerySchema = z.object({
   status: z.enum(["ACTIVE", "PENDING", "SOLD", "RENTED", "SUSPENDED"]).optional(),
 });
 
-listingsRouter.get("/", async (req, res) => {
+listingsRouter.get("/", asyncHandler(async (req, res) => {
   const parsed = listQuerySchema.safeParse(req.query);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
@@ -40,16 +41,16 @@ listingsRouter.get("/", async (req, res) => {
   });
 
   res.json(await serializeListings(listings));
-});
+}));
 
-listingsRouter.get("/:id", async (req, res) => {
+listingsRouter.get("/:id", asyncHandler(async (req, res) => {
   const listing = await db.listing.findUnique({
     where: { id: req.params.id },
     include: { office: true },
   });
   if (!listing) return res.status(404).json({ error: "Listing not found" });
   res.json(await serializeListing(listing));
-});
+}));
 
 const createSchema = z.object({
   officeId: z.string(),
@@ -66,7 +67,7 @@ const createSchema = z.object({
   officeStatedCondition: z.string().min(1),
 });
 
-listingsRouter.post("/", async (req, res) => {
+listingsRouter.post("/", asyncHandler(async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
@@ -84,7 +85,7 @@ listingsRouter.post("/", async (req, res) => {
   matchNewListing(listing.id).catch((err) => console.error("matchNewListing failed:", err));
 
   res.status(201).json(await serializeListing(listing));
-});
+}));
 
 const updateSchema = z.object({
   title: z.string().min(1).optional(),
@@ -97,7 +98,7 @@ const updateSchema = z.object({
   areaSqm: z.number().positive().optional(),
 });
 
-listingsRouter.patch("/:id", async (req, res) => {
+listingsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
@@ -126,4 +127,4 @@ listingsRouter.patch("/:id", async (req, res) => {
   });
 
   res.json(await serializeListing(listing));
-});
+}));

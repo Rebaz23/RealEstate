@@ -30,3 +30,8 @@ const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 app.listen(port, () => {
   console.log(`[api] listening on http://localhost:${port}`);
 });
+
+// Last-resort safety net: keep the server alive even if some code path outside
+// the route handlers (e.g. a fire-and-forget background task) throws.
+process.on("unhandledRejection", (err) => console.error("[api] unhandled rejection:", err));
+process.on("uncaughtException", (err) => console.error("[api] uncaught exception:", err));

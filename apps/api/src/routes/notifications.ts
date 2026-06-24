@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { db } from "../db.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 
 export const notificationsRouter = Router();
 
-notificationsRouter.get("/", async (req, res) => {
+notificationsRouter.get("/", asyncHandler(async (req, res) => {
   const userId = typeof req.query.userId === "string" ? req.query.userId : undefined;
   if (!userId) return res.status(400).json({ error: "userId query param required" });
 
@@ -24,9 +25,9 @@ notificationsRouter.get("/", async (req, res) => {
       listing: n.listing,
     }))
   );
-});
+}));
 
-notificationsRouter.patch("/:id/read", async (req, res) => {
+notificationsRouter.patch("/:id/read", asyncHandler(async (req, res) => {
   const existing = await db.notification.findUnique({ where: { id: req.params.id } });
   if (!existing) return res.status(404).json({ error: "Notification not found" });
 
@@ -35,4 +36,4 @@ notificationsRouter.patch("/:id/read", async (req, res) => {
     data: { read: true },
   });
   res.json({ id: notification.id, read: notification.read });
-});
+}));

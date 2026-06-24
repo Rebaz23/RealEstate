@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { db } from "../db.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 
 export const leadsRouter = Router();
 
@@ -32,7 +33,7 @@ function serializeLead(lead: {
   };
 }
 
-leadsRouter.get("/", async (req, res) => {
+leadsRouter.get("/", asyncHandler(async (req, res) => {
   const officeId = typeof req.query.officeId === "string" ? req.query.officeId : undefined;
 
   const leads = await db.lead.findMany({
@@ -45,13 +46,13 @@ leadsRouter.get("/", async (req, res) => {
   });
 
   res.json(leads.map(serializeLead));
-});
+}));
 
 const updateSchema = z.object({
   status: z.enum(["NEW", "QUALIFIED", "CONTACTED", "CLOSED_WON", "CLOSED_LOST"]),
 });
 
-leadsRouter.patch("/:id", async (req, res) => {
+leadsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
 
@@ -68,4 +69,4 @@ leadsRouter.patch("/:id", async (req, res) => {
   });
 
   res.json(serializeLead(lead));
-});
+}));
