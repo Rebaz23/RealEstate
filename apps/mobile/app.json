@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "RealEstate AI",
+    "slug": "realestate-ai",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#0F766E"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.realestate.ai"
+    },
+    "android": {
+      "package": "com.realestate.ai"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum support, so the types below are plain strings.
+// Valid values are enforced at the API boundary via zod (see apps/api/src/routes)
+// and mirrored as TS union types in packages/shared.
+//
+// ListingType: "SALE" | "RENT"
+// ListingStatus: "ACTIVE" | "PENDING" | "SOLD" | "RENTED" | "SUSPENDED"
+// SubscriptionTier: "BASIC" | "PRO"
+// LeadStatus: "NEW" | "QUALIFIED" | "CONTACTED" | "CLOSED_WON" | "CLOSED_LOST"
+// TrustSignalSource: "USER_FEEDBACK" | "OFFICE_PASSIVE" | "RATING" | "COMMENT" | "BEHAVIOR"
+// TrustSignalType: "PRICE_MATCH" | "PRICE_MISMATCH" | "CONDITION_MATCH" | "CONDITION_MISMATCH"
+//                  | "STILL_AVAILABLE" | "UNAVAILABLE" | "RATING" | "COMMENT" | "VIEW" | "CONTACT_CLICK"
+// MessageRole: "USER" | "ASSISTANT"
+
+model Office {
+  id               String   @id @default(cuid())
+  name             String
+  phone            String
+  email            String   @unique
+  subscriptionTier String   @default("BASIC")
+  leadCredits      Int      @default(10)
+  createdAt        DateTime @default(now())
+
+  agents   Agent[]
+  listings Listing[]
+  leads    Lead[]
+}
+
+model Agent {
+  id       String @id @default(cuid())
+  officeId String
+  name     String
+  email    String @unique
+
+  office Office @relation(fields: [officeId], references: [id])
+}
+
+model Listing {
+  id                    String   @id @default(cuid())
+  officeId              String
+  type                  String
+  status                String   @default("ACTIVE")
+  title                 String
+  description           String
+  price                 Float
+  currency              String   @default("USD")
+  neighborhood          String
+  city                  String   @default("Baghdad")
+  bedrooms              Int
+  bathrooms             Int
+  areaSqm               Float
+  officeStatedCondition String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  office        Office         @relation(fields: [officeId], references: [id])
+  trustSignals  TrustSignal[]
+  leads         Lead[]
+  conversations Conversation[]
+  notifications Notification[]
+
+  @@index([status, type])
+  @@index([neighborhood])
+}
+
+model EndUser {
+  id                    String   @id @default(cuid())
+  name                  String
+  phone                 String   @unique
+  preferredType         String?
+  budgetMin             Float?
+  budgetMax             Float?
+  preferredNeighborhood String?
+  preferredBedrooms     Int?
+  createdAt             DateTime @default(now())
+
+  conversations Conversation[]
+  leads         Lead[]
+  notifications Notification[]
+
+  @@map("end_users")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String?
+  createdAt DateTime @default(now())
+
+  user     EndUser   @relation(fields: [userId], references: [id])
+  listing  Listing?  @relation(fields: [listingId], references: [id])
+  messages Message[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model Lead {
+  id                 String   @id @default(cuid())
+  listingId          String
+  userId             String
+  officeId           String
+  status             String   @default("NEW")
+  qualificationNotes String
+  budgetConfirmed    Boolean  @default(false)
+  intentScore        Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  user    EndUser @relation(fields: [userId], references: [id])
+  office  Office  @relation(fields: [officeId], references: [id])
+}
+
+// Polymorphic trust/reality signal. Powers per-listing and per-office trust
+// scores from post-viewing feedback, passive consistency checks on the
+// office's own data, and general ratings/comments/behavior tracking.
+model TrustSignal {
+  id        String   @id @default(cuid())
+  listingId String
+  source    String
+  type      String
+  comment   String?
+  rating    Int?
+  createdAt DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@index([listingId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  reason    String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user    EndUser @relation(fields: [userId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+}
