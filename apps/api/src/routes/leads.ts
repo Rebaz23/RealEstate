@@ -17,6 +17,7 @@ function serializeLead(lead: {
   createdAt: Date;
   listing?: { title: string; neighborhood: string; price: number };
   user?: { name: string; phone: string };
+  office?: { name: string };
 }) {
   return {
     id: lead.id,
@@ -30,6 +31,7 @@ function serializeLead(lead: {
     createdAt: lead.createdAt.toISOString(),
     listing: lead.listing,
     user: lead.user,
+    office: lead.office,
   };
 }
 
@@ -41,6 +43,7 @@ leadsRouter.get("/", asyncHandler(async (req, res) => {
     include: {
       listing: { select: { title: true, neighborhood: true, price: true } },
       user: { select: { name: true, phone: true } },
+      office: { select: { name: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -65,6 +68,7 @@ leadsRouter.patch("/:id", asyncHandler(async (req, res) => {
     include: {
       listing: { select: { title: true, neighborhood: true, price: true } },
       user: { select: { name: true, phone: true } },
+      office: { select: { name: true } },
     },
   });
 
