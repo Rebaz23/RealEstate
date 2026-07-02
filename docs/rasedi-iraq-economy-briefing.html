@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rasedi — Iraq Economy Briefing (July 2026)</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;   /* blue — primary magnitude hue */
+    --series-1-lt: #9ec5f4;/* blue 200 — de-emphasis / prior period */
+    --neg: #e34948;        /* red — below-zero / adverse pole */
+    --good-text: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-1-lt: #1c5cab;
+      --neg: #e66767;
+      --good-text: #0ca30c;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.55;
+    padding: 32px 20px 64px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { margin-bottom: 32px; }
+  .kicker {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--series-1);
+  }
+  h1 { font-size: 30px; line-height: 1.2; margin: 6px 0 8px; }
+  .sub { color: var(--text-secondary); font-size: 15px; max-width: 62ch; }
+  h2 { font-size: 20px; margin: 44px 0 10px; }
+  h3 { font-size: 15px; margin: 0 0 2px; }
+  p { margin: 10px 0; color: var(--text-secondary); font-size: 15px; }
+  p strong, li strong { color: var(--text-primary); }
+  ul { margin: 10px 0 10px 20px; color: var(--text-secondary); font-size: 15px; }
+  li { margin: 6px 0; }
+  a { color: var(--series-1); }
+
+  .tiles {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px; margin: 20px 0 8px;
+  }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .tile .label { font-size: 12.5px; color: var(--text-secondary); }
+  .tile .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .note { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  figure.chart {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 18px 12px; margin: 18px 0;
+  }
+  figure.chart figcaption { margin-bottom: 10px; }
+  figure.chart .desc { font-size: 13px; color: var(--text-secondary); }
+  .svgbox { overflow-x: auto; }
+  svg { display: block; max-width: 100%; height: auto; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .axis-label { font-size: 12px; fill: var(--muted); }
+  .cat-label { font-size: 13px; fill: var(--text-primary); }
+  .val-label { font-size: 13px; font-weight: 600; fill: var(--text-primary); }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .bar { fill: var(--series-1); }
+  .bar-lt { fill: var(--series-1-lt); }
+  .bar-neg { fill: var(--neg); }
+  .hit { fill: transparent; cursor: default; }
+
+  #tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--text-primary); color: var(--page);
+    font-size: 12.5px; padding: 6px 10px; border-radius: 6px;
+    max-width: 260px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+
+  details.table-view { margin: 8px 0 0; font-size: 13px; }
+  details.table-view summary { color: var(--muted); cursor: pointer; }
+  table { border-collapse: collapse; margin-top: 8px; width: 100%; }
+  th, td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--grid); }
+  th { color: var(--text-secondary); font-weight: 600; font-size: 12.5px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .implication {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-left: 3px solid var(--series-1); border-radius: 8px;
+    padding: 12px 16px; margin: 10px 0;
+  }
+  .implication p { margin: 2px 0 0; font-size: 14px; }
+  footer { margin-top: 48px; font-size: 12.5px; color: var(--muted); }
+  .sources { font-size: 13px; }
+  .sources li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Rasedi · Market context</div>
+  <h1>Iraq Economy Briefing</h1>
+  <p class="sub">A one-page read on the macro forces shaping Iraq's property market —
+  prepared for the Rasedi real-estate platform. Figures compiled July 2026 from the
+  World Bank, IMF, Central Bank of Iraq statements, and Iraqi press; sources linked at
+  the end. Estimates are approximate and vary by source.</p>
+</header>
+
+<div class="tiles">
+  <div class="tile"><div class="label">Population</div><div class="value">48.0M</div><div class="note">median age 21.1</div></div>
+  <div class="tile"><div class="label">Urban share</div><div class="value">73%</div><div class="note">~35M city dwellers</div></div>
+  <div class="tile"><div class="label">GDP growth, 2026–27</div><div class="value">~5.1%</div><div class="note">World Bank projection</div></div>
+  <div class="tile"><div class="label">Inflation, 2025</div><div class="value">~4.3%</div><div class="note">IMF estimate</div></div>
+  <div class="tile"><div class="label">Exchange rate</div><div class="value">1,310</div><div class="note">IQD per USD (official ~1,300)</div></div>
+  <div class="tile"><div class="label">Housing shortage</div><div class="value">2.5–3M</div><div class="note">units nationwide</div></div>
+</div>
+
+<h2>1 · An oil economy trying to diversify</h2>
+<p>Iraq remains one of the most oil-dependent economies in the world. In 2025 oil made
+up roughly <strong>53% of real GDP, 88% of government revenues, and 91% of merchandise
+exports</strong> (World Bank estimates). Growth therefore tracks OPEC+ quotas more than
+domestic activity: 2025 saw a small oil-led contraction, while the faster unwinding of
+production cuts is projected to lift growth to around <strong>5.1% a year in
+2026–27</strong>. The non-oil economy — where real estate lives — grew only
+<strong>~1.5%</strong> in 2025, held back by electricity and water shortages and a
+liquidity squeeze when oil receipts fell.</p>
+
+<figure class="chart" id="chart-oil">
+  <figcaption>
+    <h3>Oil's grip on the economy</h3>
+    <div class="desc">Oil's share of key aggregates, 2025 estimates (World Bank)</div>
+  </figcaption>
+  <div class="svgbox">
+  <svg viewBox="0 0 760 190" role="img" aria-label="Bar chart: oil accounts for 53 percent of real GDP, 88 percent of government revenues, and 91 percent of merchandise exports">
+    <!-- plot area x: 190..710 (0..100%), 5.2 px per % -->
+    <g>
+      <line class="gridline" x1="320" y1="16" x2="320" y2="158"/>
+      <line class="gridline" x1="450" y1="16" x2="450" y2="158"/>
+      <line class="gridline" x1="580" y1="16" x2="580" y2="158"/>
+      <line class="gridline" x1="710" y1="16" x2="710" y2="158"/>
+      <text class="axis-label" x="190" y="176">0%</text>
+      <text class="axis-label" x="320" y="176" text-anchor="middle">25%</text>
+      <text class="axis-label" x="450" y="176" text-anchor="middle">50%</text>
+      <text class="axis-label" x="580" y="176" text-anchor="middle">75%</text>
+      <text class="axis-label" x="710" y="176" text-anchor="end">100%</text>
+    </g>
+    <g id="oil-bars">
+      <text class="cat-label" x="180" y="41" text-anchor="end">Real GDP</text>
+      <path class="bar" d="M190,26 H461.6 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H190 Z"/>
+      <text class="val-label" x="474" y="41">53%</text>
+      <rect class="hit" x="190" y="20" width="288" height="36" data-tip="Real GDP: oil ≈ 53% (2025 est.)"/>
+
+      <text class="cat-label" x="180" y="93" text-anchor="end">Gov’t revenues</text>
+      <path class="bar" d="M190,78 H643.6 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H190 Z"/>
+      <text class="val-label" x="656" y="93">88%</text>
+      <rect class="hit" x="190" y="72" width="470" height="36" data-tip="Government revenues: oil ≈ 88% (2025 est.)"/>
+
+      <text class="cat-label" x="180" y="145" text-anchor="end">Merch. exports</text>
+      <path class="bar" d="M190,130 H659.2 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H190 Z"/>
+      <text class="val-label" x="672" y="145">91%</text>
+      <rect class="hit" x="190" y="124" width="486" height="36" data-tip="Merchandise exports: oil ≈ 91% (2025 est.)"/>
+    </g>
+    <line class="baseline" x1="190" y1="16" x2="190" y2="158"/>
+  </svg>
+  </div>
+  <details class="table-view">
+    <summary>Data table</summary>
+    <table>
+      <tr><th>Aggregate</th><th class="num">Oil share, 2025 est.</th></tr>
+      <tr><td>Real GDP</td><td class="num">53%</td></tr>
+      <tr><td>Government revenues</td><td class="num">88%</td></tr>
+      <tr><td>Merchandise exports</td><td class="num">91%</td></tr>
+    </table>
+  </details>
+</figure>
+
+<p>Two structural features matter for any consumer platform. First, the
+<strong>public sector dominates employment</strong>, so household income is tightly
+coupled to the state budget — and hence to oil. Second, reconstruction spending in
+Baghdad, Basra, Nineveh and Anbar, plus growing Gulf partnerships in energy and
+transport corridors, is where most non-oil momentum currently comes from.</p>
+
+<h2>2 · Money: a managed dinar and a cash-first system</h2>
+<p>The Central Bank holds the dinar at an official <strong>~1,300 IQD/USD</strong>
+(the 2026 budget rate); the market rate sat near <strong>1,310</strong> in July 2026,
+though parallel-market spreads have reached 15–20% in stress periods. Inflation
+moderated to <strong>~4.3% in 2025</strong>.</p>
+<p>The bigger story is how payments work. An estimated <strong>87% of Iraq's money
+supply (~95 trillion IQD, ≈ $72.5B) sits outside the banking system</strong>, and
+thousands of exchange offices outnumber the country's ~900 bank branches. But the
+direction of travel is clear: the CBI says <strong>financial inclusion passed 40% in
+2025</strong>, roughly double earlier levels; government payments went electronic-only
+in June 2025; and a CBI restructuring plan (with Oliver Wyman) forces banks to meet
+new governance standards, merge, or lose their licenses — scheduled to complete in
+2026.</p>
+
+<figure class="chart" id="chart-fin">
+  <figcaption>
+    <h3>Financial inclusion is doubling off a low base</h3>
+    <div class="desc">Share of adults with a bank account, e-wallet, or digital payment tool (CBI)</div>
+  </figcaption>
+  <div class="svgbox">
+  <svg viewBox="0 0 760 230" role="img" aria-label="Column chart: financial inclusion rose from about 20 percent in earlier years to over 40 percent in 2025">
+    <!-- plot: y 20..190, 0..50% -> 3.4 px per %, baseline y=190 -->
+    <g>
+      <line class="gridline" x1="120" y1="122" x2="710" y2="122"/>
+      <line class="gridline" x1="120" y1="54" x2="710" y2="54"/>
+      <text class="axis-label" x="110" y="126" text-anchor="end">20%</text>
+      <text class="axis-label" x="110" y="58" text-anchor="end">40%</text>
+    </g>
+    <g>
+      <path class="bar-lt" d="M296,126 a4,4 0 0 1 4,-4 h16 a4,4 0 0 1 4,4 V190 H296 Z"/>
+      <text class="val-label" x="308" y="112" text-anchor="middle">~20%</text>
+      <text class="axis-label" x="308" y="210" text-anchor="middle">Pre-2024</text>
+      <rect class="hit" x="266" y="100" width="84" height="96" data-tip="Pre-2024: financial inclusion ≈ 20%"/>
+
+      <path class="bar" d="M494,58 a4,4 0 0 1 4,-4 h16 a4,4 0 0 1 4,4 V190 H494 Z"/>
+      <text class="val-label" x="506" y="44" text-anchor="middle">40%+</text>
+      <text class="axis-label" x="506" y="210" text-anchor="middle">2025</text>
+      <rect class="hit" x="464" y="34" width="84" height="162" data-tip="2025: financial inclusion surpassed 40% (CBI)"/>
+    </g>
+    <line class="baseline" x1="120" y1="190" x2="710" y2="190"/>
+  </svg>
+  </div>
+  <details class="table-view">
+    <summary>Data table</summary>
+    <table>
+      <tr><th>Period</th><th class="num">Financial inclusion</th></tr>
+      <tr><td>Pre-2024</td><td class="num">≈ 20%</td></tr>
+      <tr><td>2025</td><td class="num">&gt; 40%</td></tr>
+    </table>
+  </details>
+</figure>
+
+<h2>3 · People: young, urban, and concentrated in a few cities</h2>
+<p>Iraq's <strong>48 million</strong> people have a median age of just
+<strong>21.1</strong> — about 36% are under 15 — and <strong>73% live in
+cities</strong>. Metro Baghdad alone holds <strong>~8 million</strong> people (one in
+six Iraqis); Basra exceeds 1.6M, Erbil tops 1M, and the three Kurdistan Region
+governorates together hold ~6.25M. Every year, a large cohort of young Iraqis enters
+household-formation age in a market that is already millions of units short — the
+demographic engine behind persistent housing demand.</p>
+
+<h2>4 · Real estate: severe shortage, opaque prices, supply finally moving</h2>
+<p>Official and advisory estimates put the national housing shortage at
+<strong>2.5–3 million units</strong>, with Baghdad missing roughly <strong>31%</strong>
+of the units it needs — the worst gap in the country. Prices reflect it: affluent
+Baghdad districts (Jadriya, Mansour, Yarmouk) trade at <strong>$3,000–7,000 per m²</strong>
+— rivaling European capitals — while lower-income areas like Sadr City run
+$680–1,360 per m². Statista sizes the total market around <strong>$1.17 trillion
+(2025)</strong>, ~79% of it residential, growing ~3.7% a year.</p>
+<p>Supply is finally responding. The government's 2025–2030 plan aims to cut the
+shortage in half via new residential cities; the flagship, <strong>Bismayah New City</strong>
+(planned 100,080 units southeast of Baghdad), has built ~30,000 and handed over
+~20,000. The Housing Ministry credits the new-cities program with a <strong>~10%
+drop in property prices</strong> — the first meaningful cooling after years of
+increases.</p>
+
+<figure class="chart" id="chart-housing">
+  <figcaption>
+    <h3>The housing gap dwarfs the current pipeline</h3>
+    <div class="desc">Housing units, millions — national shortage vs. the flagship new-city project</div>
+  </figcaption>
+  <div class="svgbox">
+  <svg viewBox="0 0 760 240" role="img" aria-label="Bar chart comparing the national housing shortage of about 2.75 million units to Bismayah New City's 100 thousand planned and 30 thousand built units">
+    <!-- plot x: 220..710 ; 3.0M -> 490px ; 163.3 px per M -->
+    <g>
+      <line class="gridline" x1="383" y1="16" x2="383" y2="208"/>
+      <line class="gridline" x1="547" y1="16" x2="547" y2="208"/>
+      <line class="gridline" x1="710" y1="16" x2="710" y2="208"/>
+      <text class="axis-label" x="220" y="226">0</text>
+      <text class="axis-label" x="383" y="226" text-anchor="middle">1M</text>
+      <text class="axis-label" x="547" y="226" text-anchor="middle">2M</text>
+      <text class="axis-label" x="710" y="226" text-anchor="end">3M</text>
+    </g>
+    <g>
+      <text class="cat-label" x="210" y="45" text-anchor="end">National shortage</text>
+      <path class="bar" d="M220,30 H665.1 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H220 Z"/>
+      <text class="val-label" x="681" y="45">2.5–3M</text>
+      <rect class="hit" x="220" y="24" width="490" height="36" data-tip="National housing shortage: ≈ 2.5–3 million units (bar shows 2.75M midpoint)"/>
+
+      <text class="cat-label" x="210" y="105" text-anchor="end">Bismayah planned</text>
+      <path class="bar" d="M220,90 H232.3 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H220 Z"/>
+      <text class="val-label" x="248" y="105">100k</text>
+      <rect class="hit" x="220" y="84" width="180" height="36" data-tip="Bismayah New City: 100,080 units planned"/>
+
+      <text class="cat-label" x="210" y="165" text-anchor="end">Bismayah built</text>
+      <path class="bar" d="M220,150 H221.9 a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 H220 Z"/>
+      <text class="val-label" x="238" y="165">~30k</text>
+      <rect class="hit" x="220" y="144" width="180" height="36" data-tip="Bismayah New City: ≈ 30,000 units built, ≈ 20,000 handed over"/>
+    </g>
+    <line class="baseline" x1="220" y1="16" x2="220" y2="208"/>
+  </svg>
+  </div>
+  <details class="table-view">
+    <summary>Data table</summary>
+    <table>
+      <tr><th>Item</th><th class="num">Units</th></tr>
+      <tr><td>National housing shortage (est.)</td><td class="num">2,500,000–3,000,000</td></tr>
+      <tr><td>Bismayah New City — planned</td><td class="num">100,080</td></tr>
+      <tr><td>Bismayah New City — built</td><td class="num">≈ 30,000</td></tr>
+      <tr><td>Bismayah New City — handed over</td><td class="num">≈ 20,000</td></tr>
+    </table>
+  </details>
+</figure>
+
+<h2>5 · What this means for Rasedi</h2>
+
+<div class="implication">
+  <h3>Demand is structural, not cyclical</h3>
+  <p>A 2.5–3M-unit shortage plus the world's youngest big-country median age means
+  search volume and household formation keep growing regardless of the oil cycle.
+  The user funnel is durable even when GDP isn't.</p>
+</div>
+<div class="implication">
+  <h3>Price opacity is the product opportunity</h3>
+  <p>Per-m² prices vary 5–10× across Baghdad districts with no reliable public
+  benchmark. AI-driven valuation, the trust score, and cross-referencing office
+  claims against real-user signals attack exactly the market failure buyers feel most.</p>
+</div>
+<div class="implication">
+  <h3>Design for cash, ride the digital wave</h3>
+  <p>With ~87% of money outside banks, closing a transaction stays offline for now —
+  but inclusion doubling to 40%+ and mandatory e-payments mean lead-gen today can
+  become payments/escrow tomorrow. Sequence the roadmap accordingly.</p>
+</div>
+<div class="implication">
+  <h3>New supply is a B2B wedge</h3>
+  <p>Government cities (Bismayah and successors under the 2025–2030 plan) release
+  thousands of near-identical units through offices and developers — ideal inventory
+  for the B2B portal's bulk listing and AI-qualified-lead pipeline.</p>
+</div>
+<div class="implication">
+  <h3>Watch the oil-linked liquidity channel</h3>
+  <p>Household purchasing power moves with public salaries, which move with oil.
+  A soft-oil year (like 2025) shows up as slower closings and price cooling — worth
+  building into demand forecasts and office-side expectations.</p>
+</div>
+
+<h2>Sources</h2>
+<ul class="sources">
+  <li><a href="https://thedocs.worldbank.org/en/doc/65cf93926fdb3ea23b72f277fc249a72-0500042021/related/mpo-irq.pdf">World Bank — Iraq Macro Poverty Outlook</a> (oil shares, growth projections, non-oil growth)</li>
+  <li><a href="https://www.imf.org/en/countries/irq">IMF — Iraq country page</a> (inflation estimates)</li>
+  <li><a href="https://rawabetcenter.com/en/?p=10993">Rawabet Center — Iraq's Economic Outlook 2026</a></li>
+  <li><a href="https://www.ebc.com/forex/will-the-iraqi-dinar-revalue-in-2026">EBC — CBI's 1,300 rate and the 2026 budget</a>; <a href="https://tradingeconomics.com/iraq/currency">Trading Economics — USD/IQD</a></li>
+  <li><a href="https://shafaq.com/en/Economy/Exchange-offices-expand-in-Iraq-Cash-economy-outpaces-banking-sector">Shafaq News — cash economy and exchange offices</a>; <a href="https://www.ecomnewsmed.com/en/2025/11/12/iraq-what-is-the-state-of-the-iraqi-banking-sector-and-how-is-it-evolving/">EcomnewsMed — CBI banking overhaul</a></li>
+  <li><a href="https://www.worldometers.info/world-population/iraq-population/">Worldometer — Iraq population &amp; demographics 2026</a>; <a href="https://www.macrotrends.net/global-metrics/cities/21529/baghdad/population">Macrotrends — Baghdad metro population</a></li>
+  <li><a href="https://shafaq.com/en/Report/Soaring-real-estate-prices-deepen-Iraq-s-housing-crisis">Shafaq News — housing crisis &amp; Baghdad prices</a>; <a href="https://app.shanashel.com/blog/main-blog-1/baghdad-clear-price-gaps-and-growing-demand-despite-a-housing-shortage-19">Shanashel — Baghdad price gaps</a></li>
+  <li><a href="https://www.iraqinews.com/iraq/iraq-real-estate-prices-drop-new-housing-cities/">Iraqi News — 10% price drop &amp; new housing cities</a>; <a href="https://ahmadkhalaf.com/research/iraq-real-estate-outlook-2025-h2/">Ahmad Khalaf — Iraq Real Estate Outlook 2025 H2</a> (shortage &amp; Bismayah figures)</li>
+  <li><a href="https://www.statista.com/outlook/fmo/real-estate/iraq">Statista — Iraq real estate market forecast</a></li>
+</ul>
+
+<footer>
+  Prepared July 2026 for the Rasedi prototype. Figures are best-available public
+  estimates and vary across sources; treat them as directional, not audited.
+</footer>
+
+</div>
+<div id="tooltip" role="status"></div>
+<script>
+  const tip = document.getElementById('tooltip');
+  document.querySelectorAll('.hit[data-tip]').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      tip.textContent = el.dataset.tip;
+      tip.style.display = 'block';
+      const pad = 14;
+      let x = e.clientX + pad, y = e.clientY + pad;
+      const r = tip.getBoundingClientRect();
+      if (x + r.width > window.innerWidth - 8) x = e.clientX - r.width - pad;
+      if (y + r.height > window.innerHeight - 8) y = e.clientY - r.height - pad;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+</script>
+</body>
+</html>
